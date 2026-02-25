@@ -1,0 +1,55 @@
+/* 
+Theme Name: Hello Elementor Child
+Theme URI: https://github.com/elementor/hello-theme-child/
+Description: Hello Elementor Child is a child theme of Hello Elementor, created by Elementor team
+Author: Elementor Team
+Author URI: https://elementor.com/
+Template: hello-elementor
+Version: 2.0.0
+Text Domain: hello-elementor-child
+License: GNU General Public License v3 or later.
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
+Tags: flexible-header, custom-colors, custom-menu, custom-logo, editor-style, featured-images, rtl-language-support, threaded-comments, translation-ready
+*/
+
+/* Add your custom styles here */
+.single-room-tags-location p {
+    color: #fff;
+    font-size: 30px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 5px;
+    font-style: italic;
+    line-height: 1.1;
+    font-weight: 500;
+}
+
+.mphb-regular-price {
+    font-family: inherit !important;
+}
+
+.single-room-h1-title {
+    text-align: center;
+}
+
+.accommodation-category-in-header {
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+}
+
+.accommodation-category-in-header a:link {
+    color: #fff;
+}
+
+.accommodation-category-in-header a:hover {
+    color: #CD6336;
+}
+
+.accommodation-category-in-header .mphb-attribute-title.mphb-categories-title {
+    display: none !important;
+}
+
+.mphb_sc_search_results-wrapper form.mphb-reservation-cart .mphb-empty-cart-message {
+    font-family: inherit !important;
+}

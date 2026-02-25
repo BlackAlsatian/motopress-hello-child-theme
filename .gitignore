@@ -1,0 +1,29 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build / package artifacts
+*.zip
+*.tar
+*.gz
+
+# Dependencies / temp
+node_modules/
+vendor/
+.npm/
+.cache/
+
+# Logs
+*.log
+
+# WordPress/runtime noise (if ever created in-theme)
+wp-cache-config.php
+advanced-cache.php
+
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.key
