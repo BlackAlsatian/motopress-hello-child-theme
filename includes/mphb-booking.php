@@ -4,6 +4,115 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+add_filter('pre_option_mphb_hide_guests_on_search', 'book_inn_mphb_hide_guests_on_search', 10, 3);
+function book_inn_mphb_hide_guests_on_search($preOption, $option, $default)
+{
+	return true;
+}
+
+add_action('wp', 'book_inn_mphb_sync_guest_attribute_to_occupancy', 1);
+function book_inn_mphb_extract_guest_count($text)
+{
+	$value = trim((string) $text);
+	if ($value === '') {
+		return 0;
+	}
+
+	if (preg_match('/(\d+)/', $value, $matches)) {
+		return (int) $matches[1];
+	}
+
+	$wordMap = array(
+		'one' => 1,
+		'two' => 2,
+		'three' => 3,
+		'four' => 4,
+		'five' => 5,
+		'six' => 6,
+		'seven' => 7,
+		'eight' => 8,
+		'nine' => 9,
+		'ten' => 10,
+		'eleven' => 11,
+		'twelve' => 12,
+	);
+
+	$lower = strtolower($value);
+	foreach ($wordMap as $word => $count) {
+		if (preg_match('/\b' . preg_quote($word, '/') . '\b/', $lower)) {
+			return $count;
+		}
+	}
+
+	return 0;
+}
+
+function book_inn_mphb_sync_guest_attribute_to_occupancy()
+{
+	if (is_admin() || ! function_exists('MPHB')) {
+		return;
+	}
+
+	if (empty($_GET['mphb_attributes']) || ! is_array($_GET['mphb_attributes'])) {
+		return;
+	}
+
+	$attributes = wp_unslash($_GET['mphb_attributes']);
+	$guestAttributeKeys = array('guest', 'guests');
+	$guestTermId = 0;
+	$guestAttributeKey = '';
+
+	foreach ($guestAttributeKeys as $attributeKey) {
+		if (empty($attributes[$attributeKey])) {
+			continue;
+		}
+
+		$candidateTermId = absint($attributes[$attributeKey]);
+		if ($candidateTermId > 0) {
+			$guestTermId = $candidateTermId;
+			$guestAttributeKey = $attributeKey;
+			break;
+		}
+	}
+
+	if ($guestTermId <= 0 || $guestAttributeKey === '') {
+		return;
+	}
+
+	$taxonomy = function_exists('mphb_attribute_taxonomy_name') ? mphb_attribute_taxonomy_name($guestAttributeKey) : '';
+	if ($taxonomy === '') {
+		return;
+	}
+
+	$term = get_term($guestTermId, $taxonomy);
+	if (! $term || is_wp_error($term)) {
+		return;
+	}
+
+	$guestCount = 0;
+	$guestCount = book_inn_mphb_extract_guest_count($term->name);
+	if ($guestCount <= 0) {
+		$guestCount = book_inn_mphb_extract_guest_count($term->slug);
+	}
+	if ($guestCount <= 0 && isset($term->description)) {
+		$guestCount = book_inn_mphb_extract_guest_count($term->description);
+	}
+
+	if ($guestCount <= 0) {
+		return;
+	}
+
+	$minAdults = (int) MPHB()->settings()->main()->getMinAdults();
+	$maxAdults = (int) MPHB()->settings()->main()->getSearchMaxAdults();
+	$minChildren = (int) MPHB()->settings()->main()->getMinChildren();
+	$guestCount = max($minAdults, min($guestCount, $maxAdults));
+
+	$_GET['mphb_adults'] = (string) $guestCount;
+	$_GET['mphb_children'] = (string) $minChildren;
+	$_REQUEST['mphb_adults'] = (string) $guestCount;
+	$_REQUEST['mphb_children'] = (string) $minChildren;
+}
+
 function book_inn_register_booking_image_sizes()
 {
 	add_image_size('book-inn-large', 920, 650, true);
@@ -50,6 +159,42 @@ function book_inn_mphb_widget_force_details($instance, $widget, $args)
 	$instance['show_details'] = true;
 
 	return $instance;
+}
+
+add_filter('mphb_sc_search_results_recommendation_title', 'book_inn_mphb_recommendation_title', 10, 1);
+function book_inn_mphb_recommendation_title($title)
+{
+	if (is_admin()) {
+		return $title;
+	}
+
+	if (function_exists('MPHB')) {
+		$search = MPHB()->searchParametersStorage()->get();
+		$adults = isset($search['mphb_adults']) ? (int) $search['mphb_adults'] : 0;
+		if ($adults > 0) {
+			return sprintf(_n('Recommended for %d guest', 'Recommended for %d guests', $adults, 'motopress-hotel-booking'), $adults);
+		}
+	}
+
+	return esc_html__('Recommended for your search', 'motopress-hotel-booking');
+}
+
+add_filter('ngettext_motopress-hotel-booking', 'book_inn_mphb_guest_wording', 10, 5);
+function book_inn_mphb_guest_wording($translation, $single, $plural, $number, $domain)
+{
+	if (is_admin()) {
+		return $translation;
+	}
+
+	if ($single === '%d adult' && $plural === '%d adults') {
+		return sprintf(_n('%d guest', '%d guests', $number, 'motopress-hotel-booking'), $number);
+	}
+
+	if ($single === 'Recommended for %d adult' && $plural === 'Recommended for %d adults') {
+		return sprintf(_n('Recommended for %d guest', 'Recommended for %d guests', $number, 'motopress-hotel-booking'), $number);
+	}
+
+	return $translation;
 }
 
 add_filter('mphb_loop_room_type_gallery_main_slider_flexslider_options', 'book_inn_mphb_flexslider_options');

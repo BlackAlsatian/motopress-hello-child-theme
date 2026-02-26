@@ -1765,21 +1765,15 @@ input.mphb-datepick {
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
+	flex: 0 1 180px;
 }
 
 .home-search-form .mphb_sc_search-form br {
 	display: none;
 }
 
-.home-search-form :is(.mphb_sc_search-check-in-date,
-	.mphb_sc_search-check-out-date,
-	.mphb_sc_search-adults,
-	.mphb_sc_search-children) {
-	flex: 0 1 180px;
-}
-
 .home-search-form :is(.mphb_sc_search-adults, .mphb_sc_search-children) {
-	flex: 0 1 90px;
+	display: none !important;
 }
 
 .home-search-form .mphb_sc_search-submit-button-wrapper {
@@ -1824,14 +1818,13 @@ input.mphb-datepick {
 		flex-wrap: wrap;
 	}
 
-	.home-search-form :is(.mphb_sc_search-check-in-date,
-		.mphb_sc_search-check-out-date) {
+	.home-search-form .mphb_sc_search-form>p:not(.mphb_sc_search-submit-button-wrapper):not(.mphb_sc_search-adults):not(.mphb_sc_search-children) {
 		flex: 1 1 calc(50% - 8px);
 	}
 
 	.home-search-form :is(.mphb_sc_search-adults,
 		.mphb_sc_search-children) {
-		flex: 1 1 calc(50% - 8px);
+		display: none !important;
 	}
 
 	.home-search-form .mphb_sc_search-submit-button-wrapper {
@@ -1856,6 +1849,14 @@ input.mphb-datepick {
 	margin: 0 5px;
 }
 
+.mphb-booking-form .book-inn-guests-wrapper select {
+	width: 100%;
+}
+
+:is(.mphb_sc_search-form, .mphb_widget_search-form) .book-inn-guests-wrapper select {
+	width: 100%;
+}
+
 .mphb-reserve-btn {
 	width: 100%;
 }
@@ -1875,9 +1876,12 @@ input.mphb-datepick {
 }
 
 .mphb_sc_search_results-wrapper form.mphb-recommendation .mphb-recommendation-details-list .mphb-recommendation-item-guests {
-	font-size: 15px;
-	letter-spacing: .02em;
-	margin-top: 5px;
+	display: none !important;
+}
+
+.mphb_sc_search_results-wrapper form.mphb-recommendation .mphb-recommendation-details-list .mphb-recommendation-item-adults-children-separator,
+.mphb_sc_search_results-wrapper form.mphb-recommendation .mphb-recommendation-details-list .mphb-recommendation-item-children {
+	display: none !important;
 }
 
 .mphb_sc_search_results-wrapper form.mphb-recommendation .mphb-recommendation-reserve-button {

@@ -223,5 +223,15 @@ function book_inn_enqueue_mphb_assets()
 	$mphb_js_path = get_stylesheet_directory() . '/assets/js/mphb-booking.js';
 	$mphb_js_ver = file_exists($mphb_js_path) ? filemtime($mphb_js_path) : HELLO_ELEMENTOR_CHILD_VERSION;
 	wp_enqueue_script('book-inn-mphb', get_stylesheet_directory_uri() . '/assets/js/mphb-booking.js', array('jquery', 'book-inn-slick'), $mphb_js_ver, true);
+
+	if (function_exists('MPHB')) {
+		$bookingConfig = array(
+			'minAdults' => (int) MPHB()->settings()->main()->getMinAdults(),
+			'maxAdults' => (int) MPHB()->settings()->main()->getSearchMaxAdults(),
+			'minChildren' => (int) MPHB()->settings()->main()->getMinChildren(),
+		);
+
+		wp_add_inline_script('book-inn-mphb', 'window.bookInnMphbConfig = ' . wp_json_encode($bookingConfig) . ';', 'before');
+	}
 }
 add_action('wp_enqueue_scripts', 'book_inn_enqueue_mphb_assets', 30);

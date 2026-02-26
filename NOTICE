@@ -1,0 +1,11 @@
+NOTICE
+
+This project is a custom child theme built for WordPress on top of the Hello Elementor parent theme.
+
+Attribution:
+- Parent theme: Hello Elementor (Elementor Ltd.)
+- This repository contains custom child-theme code and template overrides for this project.
+
+Licensing:
+- This child theme is distributed under GPL-2.0-or-later (see LICENSE).
+- Any third-party assets, trademarks, or brand materials remain the property of their respective owners and are not relicensed by this NOTICE.
