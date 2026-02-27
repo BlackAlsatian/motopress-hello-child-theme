@@ -15,7 +15,7 @@ if (! defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
-define('HELLO_ELEMENTOR_CHILD_VERSION', '2.0.31');
+define('HELLO_ELEMENTOR_CHILD_VERSION', '2.0.32');
 
 // Toggle Elementor editing for MotoPress Hotel Booking system pages/CPTs.
 // Define in wp-config.php to override per environment.
