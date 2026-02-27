@@ -376,7 +376,7 @@ function book_inn_mphb_sc_checkout_room_details_before()
 			return;
 		}
 
-		$showAllUrl = home_url('/accommodations/');
+		$showAllUrl = home_url('/find-accommodation/');
 		?>
 			<div class="mphb-room-type book-inn-room-card book-inn-show-all-card">
 				<div class="mphb-room-type-content-wrapper">
@@ -406,7 +406,7 @@ function book_inn_mphb_sc_checkout_room_details_before()
 			return;
 		}
 
-		$showAllUrl = home_url('/accommodations/');
+		$showAllUrl = home_url('/find-accommodation/');
 		?>
 			<div class="mphb-room-type book-inn-room-card book-inn-show-all-card">
 				<div class="mphb-room-type-content-wrapper">
