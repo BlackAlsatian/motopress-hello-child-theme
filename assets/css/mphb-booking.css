@@ -281,7 +281,8 @@
 .mphb_sc_search_results-wrapper .mphb-room-type-list,
 .mphb_sc_search_results-wrapper .mphb-search-results-list,
 .mphb_sc_rooms-wrapper .rooms-wrapper,
-.mphb_sc_rooms-wrapper .mphb-room-type-list {
+.mphb_sc_rooms-wrapper .mphb-room-type-list,
+.mphb_widget_rooms-wrapper:not(.slider):not(.slide) {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 24px;
@@ -296,6 +297,13 @@
 
 .mphb_sc_rooms-wrapper .type-mphb_room_type,
 .mphb_sc_rooms-wrapper .mphb-room-type {
+	margin: 0;
+	height: 100%;
+	display: flex;
+}
+
+.mphb_widget_rooms-wrapper:not(.slider):not(.slide) .type-mphb_room_type,
+.mphb_widget_rooms-wrapper:not(.slider):not(.slide) .mphb-room-type {
 	margin: 0;
 	height: 100%;
 	display: flex;
@@ -317,7 +325,8 @@
 	.mphb_sc_search_results-wrapper .mphb-room-type-list,
 	.mphb_sc_search_results-wrapper .mphb-search-results-list,
 	.mphb_sc_rooms-wrapper .rooms-wrapper,
-	.mphb_sc_rooms-wrapper .mphb-room-type-list {
+	.mphb_sc_rooms-wrapper .mphb-room-type-list,
+	.mphb_widget_rooms-wrapper:not(.slider):not(.slide) {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
@@ -328,7 +337,8 @@
 	.mphb_sc_search_results-wrapper .mphb-room-type-list,
 	.mphb_sc_search_results-wrapper .mphb-search-results-list,
 	.mphb_sc_rooms-wrapper .rooms-wrapper,
-	.mphb_sc_rooms-wrapper .mphb-room-type-list {
+	.mphb_sc_rooms-wrapper .mphb-room-type-list,
+	.mphb_widget_rooms-wrapper:not(.slider):not(.slide) {
 		grid-template-columns: minmax(0, 1fr);
 		gap: 18px;
 	}
@@ -365,6 +375,26 @@
 	justify-content: center;
 }
 
+.mphb_sc_rooms-wrapper .mphb-pagination,
+.mphb_widget_rooms-wrapper .mphb-pagination,
+.mphb_widget_rooms-wrapper+.mphb-pagination,
+.mphb_widget_rooms-wrapper~.mphb-pagination {
+	margin: 26px 0 0;
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	grid-column: 1 / -1;
+	justify-self: center;
+}
+
+.navigation.mphb-pagination.pagination .nav-links {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers {
 	list-style: none;
 	display: flex;
@@ -374,12 +404,79 @@
 	margin: 0;
 }
 
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 0;
+	margin: 0;
+}
+
+.navigation.mphb-pagination.pagination .nav-links .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid #e4e4e4;
+	border-radius: 6px;
+	text-decoration: none;
+	color: inherit;
+	font-weight: 600;
+}
+
+/* Elementor editor fallback: keep non-slider widget pagination placement consistent with frontend. */
+.elementor-editor-active .mphb_widget_rooms-wrapper:not(.slider):not(.slide) .mphb-pagination,
+.elementor-editor-active .mphb_widget_rooms-wrapper:not(.slider):not(.slide)+.mphb-pagination,
+.elementor-editor-active .mphb_widget_rooms-wrapper:not(.slider):not(.slide)~.mphb-pagination {
+	margin: 26px 0 0;
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	grid-column: 1 / -1;
+	justify-self: center;
+}
+
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers li {
+	margin: 0;
+}
+
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers li,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers li,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers li,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers li {
 	margin: 0;
 }
 
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers a,
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid #e4e4e4;
+	border-radius: 6px;
+	text-decoration: none;
+	color: inherit;
+	font-weight: 600;
+}
+
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers a,
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers span,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers a,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers span,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers a,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers span,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers a,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers span {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -399,8 +496,39 @@
 	color: #fff;
 }
 
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers .current,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers .current,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers .current,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers .current {
+	background: var(--e-global-color-primary, #455d58);
+	border-color: var(--e-global-color-primary, #455d58);
+	color: #fff;
+}
+
+.navigation.mphb-pagination.pagination .nav-links .page-numbers.current {
+	background: var(--e-global-color-primary, #455d58);
+	border-color: var(--e-global-color-primary, #455d58);
+	color: #fff;
+}
+
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers .prev,
 .mphb_sc_search_results-wrapper .mphb-pagination .page-numbers .next {
+	padding: 0 14px;
+}
+
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers .prev,
+.mphb_sc_rooms-wrapper .mphb-pagination .page-numbers .next,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers .prev,
+.mphb_widget_rooms-wrapper .mphb-pagination .page-numbers .next,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers .prev,
+.mphb_widget_rooms-wrapper+.mphb-pagination .page-numbers .next,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers .prev,
+.mphb_widget_rooms-wrapper~.mphb-pagination .page-numbers .next {
+	padding: 0 14px;
+}
+
+.navigation.mphb-pagination.pagination .nav-links .page-numbers.prev,
+.navigation.mphb-pagination.pagination .nav-links .page-numbers.next {
 	padding: 0 14px;
 }
 
@@ -1113,11 +1241,13 @@ body.book-inn-search-loading .mphb_sc_search_results-wrapper::after {
 	text-decoration: none;
 }
 
-.mphb_widget_rooms-wrapper .type-mphb_room_type {
+.mphb_widget_rooms-wrapper:is(.slider, .slide) .type-mphb_room_type,
+:is(.slider, .slide) .mphb_widget_rooms-wrapper .type-mphb_room_type {
 	margin-bottom: 80px;
 }
 
-.mphb_widget_rooms-wrapper .type-mphb_room_type:last-child {
+.mphb_widget_rooms-wrapper:is(.slider, .slide) .type-mphb_room_type:last-child,
+:is(.slider, .slide) .mphb_widget_rooms-wrapper .type-mphb_room_type:last-child {
 	margin-bottom: 0;
 }
 
