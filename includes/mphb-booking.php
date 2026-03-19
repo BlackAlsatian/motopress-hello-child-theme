@@ -322,10 +322,273 @@ function book_inn_review_callback($comment, $args, $depth)
 	<?php
 }
 
-add_action('mphb_sc_checkout_room_details', 'book_inn_mphb_sc_checkout_room_details_before', 15);
-function book_inn_mphb_sc_checkout_room_details_before()
+function book_inn_mphb_get_imported_fee_services($roomType, $feeType = '')
 {
+	static $cache = array();
+
+	if (! function_exists('MPHB')) {
+		return array();
+	}
+
+	if (is_numeric($roomType)) {
+		$roomType = MPHB()->getRoomTypeRepository()->findById((int) $roomType);
+	}
+
+	if (! $roomType || ! method_exists($roomType, 'getOriginalId') || ! method_exists($roomType, 'getServices')) {
+		return array();
+	}
+
+	$roomTypeId = (int) $roomType->getOriginalId();
+	$cacheKey = $roomTypeId . ':' . (string) $feeType;
+	if (isset($cache[$cacheKey])) {
+		return $cache[$cacheKey];
+	}
+
+	$services = array();
+	foreach ((array) $roomType->getServices() as $serviceId) {
+		$serviceId = (int) $serviceId;
+		if ($serviceId < 1) {
+			continue;
+		}
+
+		$serviceFeeType = (string) get_post_meta($serviceId, '_hostfully_fee_type', true);
+		if ($serviceFeeType === '') {
+			continue;
+		}
+
+		if ($feeType !== '' && $serviceFeeType !== $feeType) {
+			continue;
+		}
+
+		$service = MPHB()->getServiceRepository()->findById($serviceId);
+		if (! $service) {
+			continue;
+		}
+
+		$services[$serviceId] = $service;
+	}
+
+	$cache[$cacheKey] = $services;
+
+	return $services;
+}
+
+function book_inn_mphb_is_imported_fee_service($service, $feeType = '')
+{
+	$serviceId = 0;
+
+	if (is_numeric($service)) {
+		$serviceId = (int) $service;
+	} elseif (is_object($service) && method_exists($service, 'getOriginalId')) {
+		$serviceId = (int) $service->getOriginalId();
+	} elseif (is_object($service) && method_exists($service, 'getId')) {
+		$serviceId = (int) $service->getId();
+	}
+
+	if ($serviceId < 1) {
+		return false;
+	}
+
+	$serviceFeeType = (string) get_post_meta($serviceId, '_hostfully_fee_type', true);
+	if ($serviceFeeType === '') {
+		return false;
+	}
+
+	if ($feeType !== '') {
+		return $serviceFeeType === $feeType;
+	}
+
+	return true;
+}
+
+function book_inn_mphb_build_service_request_payload($serviceId, $serviceDetails = array())
+{
+	$serviceId = (int) $serviceId;
+	if ($serviceId < 1 || ! function_exists('MPHB')) {
+		return array();
+	}
+
+	$service = MPHB()->getServiceRepository()->findById($serviceId);
+	if (! $service) {
+		return array();
+	}
+
+	$payload = array(
+		'id'     => (string) $serviceId,
+		'adults' => isset($serviceDetails['adults']) && absint($serviceDetails['adults']) > 0 ? (string) absint($serviceDetails['adults']) : '1',
+	);
+
+	if ($service->isFlexiblePay()) {
+		$minimumQuantity = max(1, (int) $service->getMinQuantity());
+		$quantity = isset($serviceDetails['quantity']) ? absint($serviceDetails['quantity']) : $minimumQuantity;
+		$payload['quantity'] = (string) max($minimumQuantity, $quantity);
+	}
+
+	return $payload;
+}
+
+function book_inn_mphb_normalize_checkout_room_details($bookingDetails)
+{
+	if (! is_array($bookingDetails) || ! function_exists('MPHB')) {
+		return $bookingDetails;
+	}
+
+	foreach ($bookingDetails as $index => $roomDetails) {
+		if (! is_array($roomDetails)) {
+			continue;
+		}
+
+		$roomTypeId = isset($roomDetails['room_type_id']) ? absint($roomDetails['room_type_id']) : 0;
+		if ($roomTypeId < 1) {
+			$bookingDetails[$index] = $roomDetails;
+			continue;
+		}
+
+		$roomType = MPHB()->getRoomTypeRepository()->findById($roomTypeId);
+		if (! $roomType) {
+			$bookingDetails[$index] = $roomDetails;
+			continue;
+		}
+
+		$cleaningServices = book_inn_mphb_get_imported_fee_services($roomType, 'cleaningFee');
+		$servicesById = array();
+
+		if (! empty($roomDetails['services']) && is_array($roomDetails['services'])) {
+			foreach ($roomDetails['services'] as $serviceDetails) {
+				if (! is_array($serviceDetails) || empty($serviceDetails['id'])) {
+					continue;
+				}
+
+				$serviceId = absint($serviceDetails['id']);
+				if ($serviceId < 1) {
+					continue;
+				}
+
+				$payload = book_inn_mphb_build_service_request_payload($serviceId, $serviceDetails);
+				if (! empty($payload)) {
+					$servicesById[$serviceId] = $payload;
+				}
+			}
+		}
+
+		foreach ($cleaningServices as $serviceId => $service) {
+			$existingDetails = isset($servicesById[$serviceId]) ? $servicesById[$serviceId] : array();
+			$payload = book_inn_mphb_build_service_request_payload($serviceId, $existingDetails);
+			if (! empty($payload)) {
+				$servicesById[$serviceId] = $payload;
+			}
+		}
+
+		$roomDetails['services'] = array_values($servicesById);
+		$bookingDetails[$index] = $roomDetails;
+	}
+
+	return $bookingDetails;
+}
+
+function book_inn_mphb_prepare_checkout_ajax_room_details()
+{
+	if (empty($_REQUEST['formValues']) || ! is_array($_REQUEST['formValues'])) {
+		return;
+	}
+
+	if (empty($_REQUEST['formValues']['mphb_room_details']) || ! is_array($_REQUEST['formValues']['mphb_room_details'])) {
+		return;
+	}
+
+	$_REQUEST['formValues']['mphb_room_details'] = book_inn_mphb_normalize_checkout_room_details($_REQUEST['formValues']['mphb_room_details']);
+
+	if (isset($_GET['formValues']) && is_array($_GET['formValues'])) {
+		$_GET['formValues']['mphb_room_details'] = $_REQUEST['formValues']['mphb_room_details'];
+	}
+
+	if (isset($_POST['formValues']) && is_array($_POST['formValues'])) {
+		$_POST['formValues']['mphb_room_details'] = $_REQUEST['formValues']['mphb_room_details'];
+	}
+}
+add_action('wp_ajax_mphb_update_checkout_info', 'book_inn_mphb_prepare_checkout_ajax_room_details', 1);
+add_action('wp_ajax_nopriv_mphb_update_checkout_info', 'book_inn_mphb_prepare_checkout_ajax_room_details', 1);
+
+add_filter('mphb_sc_checkout_step_booking_rooms_details', 'book_inn_mphb_normalize_checkout_room_details', 5);
+
+add_filter('mphb_sc_checkout_is_selected_service', 'book_inn_mphb_checkout_selected_service', 10, 4);
+function book_inn_mphb_checkout_selected_service($isSelected, $service, $reservedRoom, $roomType)
+{
+	if (book_inn_mphb_is_imported_fee_service($service, 'cleaningFee')) {
+		return true;
+	}
+
+	return $isSelected;
+}
+
+function book_inn_mphb_render_fee_note($args = array())
+{
+	$defaults = array(
+		'modifier'      => '',
+		'eyebrow'       => '',
+		'title'         => '',
+		'amount_html'   => '',
+		'copy'          => '',
+		'context_label' => '',
+	);
+
+	$args = wp_parse_args($args, $defaults);
+	$className = 'book-inn-checkout-fee-note';
+	if ($args['modifier'] !== '') {
+		$className .= ' ' . sanitize_html_class('book-inn-checkout-fee-note--' . $args['modifier']);
+	}
 	?>
+		<div class="<?php echo esc_attr($className); ?>">
+			<?php if ($args['eyebrow'] !== '') : ?>
+				<p class="book-inn-checkout-fee-note__eyebrow"><?php echo esc_html($args['eyebrow']); ?></p>
+			<?php endif; ?>
+			<?php if ($args['title'] !== '') : ?>
+				<h5 class="book-inn-checkout-fee-note__title"><?php echo esc_html($args['title']); ?></h5>
+			<?php endif; ?>
+			<?php if ($args['context_label'] !== '') : ?>
+				<p class="book-inn-checkout-fee-note__context"><?php echo esc_html($args['context_label']); ?></p>
+			<?php endif; ?>
+			<?php if ($args['amount_html'] !== '') : ?>
+				<p class="book-inn-checkout-fee-note__amount"><?php echo wp_kses_post($args['amount_html']); ?></p>
+			<?php endif; ?>
+			<?php if ($args['copy'] !== '') : ?>
+				<p class="book-inn-checkout-fee-note__copy"><?php echo esc_html($args['copy']); ?></p>
+			<?php endif; ?>
+		</div>
+	<?php
+}
+
+add_action('mphb_sc_checkout_room_details', 'book_inn_mphb_render_checkout_fee_notes', 45, 5);
+function book_inn_mphb_render_checkout_fee_notes($reservedRoom, $roomIndex, $roomType, $booking, $roomDetails)
+{
+	$cleaningServices = book_inn_mphb_get_imported_fee_services($roomType, 'cleaningFee');
+
+	if (empty($cleaningServices)) {
+		return;
+	}
+	?>
+		<div
+			class="book-inn-checkout-fee-meta"
+			hidden
+			data-mandatory-service-ids="<?php echo esc_attr(implode(',', array_keys($cleaningServices))); ?>"></div>
+		<?php
+		foreach ($cleaningServices as $service) {
+			book_inn_mphb_render_fee_note(
+				array(
+					'modifier'    => 'cleaning',
+					'eyebrow'     => __('Included automatically', 'book-inn'),
+					'title'       => __('Cleaning fee', 'book-inn'),
+					'amount_html' => $service->getPriceHTML(false),
+					'copy'        => __('This mandatory fee is added automatically to your booking total for this property.', 'book-inn'),
+				)
+			);
+		}
+	}
+
+	add_action('mphb_sc_checkout_room_details', 'book_inn_mphb_sc_checkout_room_details_before', 15);
+	function book_inn_mphb_sc_checkout_room_details_before()
+	{
+		?>
 		<div class="guest-chooser-wrapper">
 		<?php
 	}

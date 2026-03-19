@@ -272,12 +272,83 @@
     });
   }
 
+  function parseServiceIdList(value) {
+    return String(value || '')
+      .split(',')
+      .map(function (item) {
+        return parseInt(item, 10);
+      })
+      .filter(function (item) {
+        return Number.isFinite(item) && item > 0;
+      });
+  }
+
+  function toggleServiceRow($roomDetails, serviceId, options) {
+    var settings = $.extend(
+      {
+        checked: false,
+        rowClass: ''
+      },
+      options || {}
+    );
+
+    var $checkbox = $roomDetails.find('.mphb_checkout-service[value="' + serviceId + '"]').first();
+    if (!$checkbox.length) {
+      return;
+    }
+
+    var $row = $checkbox.closest('li');
+    if (!$row.length) {
+      return;
+    }
+
+    $checkbox.prop('checked', settings.checked);
+
+    if (settings.rowClass) {
+      $row.addClass(settings.rowClass);
+    }
+  }
+
+  function hideEmptyServiceSections($roomDetails) {
+    $roomDetails.find('.mphb-services-details').each(function () {
+      var $section = $(this);
+      var hasVisibleRows = $section.find('.mphb_checkout-services-list li').filter(function () {
+        return $(this).css('display') !== 'none';
+      }).length > 0;
+
+      $section.toggle(hasVisibleRows);
+    });
+  }
+
+  function initCheckoutFeeBehavior($context) {
+    var $root = $context && $context.length ? $context : $(document);
+
+    $root.find('.mphb-room-details').each(function () {
+      var $roomDetails = $(this);
+      var $meta = $roomDetails.find('.book-inn-checkout-fee-meta').first();
+
+      if (!$meta.length) {
+        return;
+      }
+
+      parseServiceIdList($meta.attr('data-mandatory-service-ids')).forEach(function (serviceId) {
+        toggleServiceRow($roomDetails, serviceId, {
+          checked: true,
+          rowClass: 'book-inn-hidden-service book-inn-hidden-service--mandatory'
+        });
+      });
+
+      hideEmptyServiceSections($roomDetails);
+    });
+  }
+
   $(function () {
     initRoomsSliders($(document));
     normalizeSearchPlaceholders($(document));
     handleSearchResultsLoading();
     initSearchFormGuests($(document));
     initBookingFormGuests($(document));
+    initCheckoutFeeBehavior($(document));
   });
 
   $(window).on('elementor/frontend/init', function () {
@@ -290,6 +361,7 @@
       normalizeSearchPlaceholders($scope);
       initSearchFormGuests($scope);
       initBookingFormGuests($scope);
+      initCheckoutFeeBehavior($scope);
     });
   });
 })(jQuery);

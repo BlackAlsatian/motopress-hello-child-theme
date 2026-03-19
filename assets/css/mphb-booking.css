@@ -3003,6 +3003,70 @@ body .book-inn-booking-hero h1.book-inn-booking-hero__title {
 	display: inline-block;
 }
 
+.mphb-reserve-rooms-details .mphb_checkout-services-list li.book-inn-hidden-service {
+	display: none;
+}
+
+.book-inn-checkout-fee-note {
+	border: 1px solid #d9d1c4;
+	background: linear-gradient(180deg, #f9f4eb 0%, #f4eee2 100%);
+	border-radius: 18px;
+	padding: 20px 22px;
+	margin-top: 20px;
+	color: #2f2f2b;
+}
+
+.book-inn-checkout-fee-note__eyebrow {
+	margin: 0 0 8px;
+	font-size: 12px;
+	line-height: 1.4;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+	color: #8a6a3f;
+	font-weight: 600;
+}
+
+.book-inn-checkout-fee-note__title,
+.book-inn-checkout-fee-note__amount,
+.book-inn-checkout-fee-note__context,
+.book-inn-checkout-fee-note__copy {
+	margin: 0;
+}
+
+.book-inn-checkout-fee-note__title {
+	font-size: 21px;
+	line-height: 1.3;
+	margin-bottom: 6px;
+}
+
+.book-inn-checkout-fee-note__context {
+	margin-bottom: 8px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: #6d665d;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.book-inn-checkout-fee-note__amount {
+	margin-bottom: 10px;
+	font-size: 24px;
+	line-height: 1.2;
+	font-weight: 600;
+}
+
+.book-inn-checkout-fee-note__amount .mphb-price {
+	color: #2f2f2b;
+	font-weight: 600;
+}
+
+.book-inn-checkout-fee-note__copy {
+	font-size: 15px;
+	line-height: 1.7;
+	letter-spacing: .01em;
+}
+
 .mphb-booking-details .mphb-booking-details-title {
 	margin-top: 0;
 	font-size: 30px;
