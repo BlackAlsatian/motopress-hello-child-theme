@@ -15,7 +15,7 @@ if (! defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
-define('HELLO_ELEMENTOR_CHILD_VERSION', '2.0.32');
+define('HELLO_ELEMENTOR_CHILD_VERSION', '2.0.33');
 
 // Toggle Elementor editing for MotoPress Hotel Booking system pages/CPTs.
 // Define in wp-config.php to override per environment.
@@ -235,3 +235,35 @@ function book_inn_enqueue_mphb_assets()
 	}
 }
 add_action('wp_enqueue_scripts', 'book_inn_enqueue_mphb_assets', 30);
+
+function book_inn_limit_mphb_services_to_current_room_type($out, $pairs, $atts, $shortcode)
+{
+	if ($shortcode !== 'mphb_services') {
+		return $out;
+	}
+
+	if (! is_singular('mphb_room_type')) {
+		return $out;
+	}
+
+	if (! empty($atts['ids'])) {
+		return $out;
+	}
+
+	$room_type_id = get_queried_object_id();
+	if ($room_type_id < 1) {
+		return $out;
+	}
+
+	$service_ids = get_post_meta($room_type_id, 'mphb_services', true);
+	$service_ids = is_array($service_ids) ? $service_ids : maybe_unserialize($service_ids);
+	if (! is_array($service_ids)) {
+		$service_ids = [];
+	}
+
+	$service_ids = array_values(array_filter(array_map('absint', $service_ids)));
+	$out['ids'] = ! empty($service_ids) ? implode(',', $service_ids) : '0';
+
+	return $out;
+}
+add_filter('shortcode_atts_mphb_services', 'book_inn_limit_mphb_services_to_current_room_type', 10, 4);
